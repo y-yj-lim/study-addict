@@ -1,0 +1,291 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Addict</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6-B7HkV2oaAfDeQaZy53VbkBglbB7mRU",
+            authDomain: "study-addict.firebaseapp.com",
+            projectId: "study-addict",
+            storageBucket: "study-addict.firebasestorage.app",
+            messagingSenderId: "345011206990",
+            appId: "1:345011206990:web:1f8aa1b3cb683fd2a87c1f",
+            measurementId: "G-1VZ7MBZQW1"
+        };
+    </script>
+</head>
+<body>
+<div id="app">
+    <header>
+        <div class="hamburger" id="hamburger">☰</div>
+        <div class="header-center">
+            <h1 id="logo">📚 Study Addict</h1>
+        </div>
+        <div class="header-right">
+            <div id="userInfo" style="display: none;">
+                <span id="usernameDisplay"></span>
+                <div class="score" id="scoreDisplay"></div>
+                <span id="userBadge"></span>
+            </div>
+            <div id="authStatus"></div>
+        </div>
+    </header>
+
+    <div class="dropdown" id="dropdownMenu">
+        <a href="#" id="mainLink">🏠 메인화면</a>
+        <a href="#" id="authLink">🔑 로그인/회원가입</a>
+        <a href="#" id="shopLink">🏅 상점</a>
+        <a href="#" id="logLink">📅 기록장</a>
+        <a href="#" id="profileLink">👤 프로필</a>
+        <a href="#" id="boardLink">💬 질문게시판</a>
+        <a href="#" id="reportLink">📊 맞춤 리포트</a>
+    </div>
+
+    <section id="mainSection" style="display: block;">
+        <div id="missionSection">
+            <div class="mission-box" id="dailyMissionBox">
+                <div class="mission-text" id="dailyMissionText">🎯 오늘의 미션을 설정해주세요!</div>
+                <div class="mission-status">진행 상황: <span id="dailyMissionPercent">0%</span></div>
+                <div class="progress-bar">
+                    <div id="dailyMissionProgress" class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mission-box">
+            <div class="timer-container">
+                <div id="timeText" class="time-display">00:00</div>
+                <button id="startPauseBtn">▶ 시작</button>
+                <p id="timerRewardText">(1분마다 +2점)</p>
+            </div>
+        </div>
+
+        <div class="mission-box">
+            <div id="totalTimeDisplay">누적 공부 시간: 00:00:00</div>
+            <div id="bestTimeDisplay">최고 공부 시간: 00:00:00</div>
+        </div>
+    </section>
+
+    <section id="profileSection" class="app-section" style="display: none;"> 
+        <div class="profile-box"> 
+            <h2>내 프로필</h2> 
+            
+            <div class="avatar-placeholder"></div> 
+
+            <div class="profile-input-group">
+                <span class="input-label">사용자 ID:</span>
+                <input type="text" id="profileIdInput" placeholder="새로운 ID를 입력하세요">
+                <button id="saveIdBtn" class="action-btn">ID 변경</button>
+            </div>
+
+            <p id="profileName" style="margin-top: 20px;">ID: [로드 중...]</p> 
+            <p id="profileScore">점수: 0</p>
+            
+            <div class="badge-display-box">
+                <span id="profileBadge">착용 배지: 미착용</span>
+            </div>
+
+            <button id="logoutBtn" class="danger-btn">로그아웃</button>
+        </div>
+    </section>
+
+    <section id="shopSection" style="display: none;">
+        <h2>🏅 명예 훈장 상점</h2>
+        <div id="userPoints">내 점수: 0</div>
+        <div id="diamondBadgeCount" style="font-weight: bold; margin-bottom: 15px;">
+            💎 다이아 훈장 보유: 0개
+        </div>
+        <div class="shop-items">
+            <div class="item-card">
+                <div class="item-icon">🥉</div>
+                <div class="item-name">동 훈장</div>
+                <div class="item-price">50점</div>
+                <button class="buy-btn" data-rank-id="1" data-next-rank="은 훈장" data-price="50">구매</button>
+            </div>
+            <div class="item-card">
+                <div class="item-icon">🥈</div>
+                <div class="item-name">은 훈장</div>
+                <div class="item-price">100점</div>
+                <button class="buy-btn" data-rank-id="2" data-next-rank="금 훈장" data-price="100" disabled>잠금</button>
+            </div>
+            <div class="item-card">
+                <div class="item-icon">🥇</div>
+                <div class="item-name">금 훈장</div>
+                <div class="item-price">200점</div>
+                <button class="buy-btn" data-rank-id="3" data-next-rank="다이아 훈장" data-price="200" disabled>잠금</button>
+            </div>
+            <div class="item-card">
+                <div class="item-icon">💎</div>
+                <div class="item-name">다이아 훈장</div>
+                <div class="item-price">500점</div>
+                <button class="buy-btn" data-rank-id="4" data-next-rank="다이아 훈장" data-price="500" disabled>잠금</button>
+            </div>
+        </div>
+    </section>
+    
+    <section id="authSection" style="display: none;">
+        <div class="auth-container">
+            <div id="loginForm">
+                <h3>로그인</h3>
+                <input type="text" id="loginId" placeholder="이메일">
+                <input type="password" id="loginPw" placeholder="비밀번호">
+                <button id="loginBtn">로그인</button>
+                <p>아직 회원이 아니신가요? <a href="#" id="signupLink">회원가입</a></p>
+            </div>
+            <div id="signupForm" style="display: none;">
+                <h3>회원가입</h3>
+                <input type="text" id="signupId" placeholder="이메일">
+                <input type="password" id="signupPw" placeholder="비밀번호">
+                <input type="password" id="signupPwConfirm" placeholder="비밀번호 확인">
+                <button id="signupBtn">회원가입</button>
+                <p>이미 회원이신가요? <a href="#" id="loginLink">로그인</a></p>
+            </div>
+        </div>
+    </section>
+
+    <div id="missionModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>🎯 미션 설정하기</h3>
+            <label for="missionText">미션 내용</label>
+            <input type="text" id="missionText" placeholder="예: 영어 단어 50개 외우기">
+            <label for="missionTime">목표 시간</label>
+            <select id="missionTime">
+                <option value="30">30분</option>
+                <option value="60">1시간</option>
+                <option value="90">1시간 30분</option>
+                <option value="120">2시간</option>
+                <option value="150">2시간 30분</option>
+                <option value="180">3시간</option>
+            </select>
+            <div class="modal-actions">
+                <button id="saveMissionBtn">저장</button>
+                <button id="cancelMissionBtn">취소</button>
+            </div>
+        </div>
+    </div>
+    
+    <section id="boardSection" class="qa-board-section" style="display:none;">
+        <div class="qa-wrap">
+            <div class="qa-header">
+                <h2>💬 질문게시판</h2>
+                <div class="qa-controls">
+                    <div class="qa-filters" role="tablist" aria-label="카테고리">
+                        <button class="qa-filter active" data-cat="전체">전체</button>
+                        <button class="qa-filter" data-cat="국어">국어</button>
+                        <button class="qa-filter" data-cat="영어">영어</button>
+                        <button class="qa-filter" data-cat="수학">수학</button>
+                        <button class="qa-filter" data-cat="사회">사회</button>
+                        <button class="qa-filter" data-cat="과학">과학</button>
+                        <button class="qa-filter" data-cat="기타">기타</button>
+                    </div>
+                </div>
+            </div>
+
+            <ul id="qaQuestionList" class="qa-list" aria-live="polite"></ul>
+        </div>
+
+        <button id="qaFab" class="qa-fab" title="새 질문">＋</button>
+
+        <div id="qaCreateModal" class="qa-modal" aria-hidden="true">
+            <div class="qa-modal-inner" role="dialog" aria-modal="true" aria-labelledby="qaCreateTitle">
+                <button class="qa-close" data-target="create" aria-label="닫기">✕</button>
+                <h3 id="qaCreateTitle">질문 등록</h3>
+                <select id="qaCategory" aria-label="과목 선택">
+                    <option>국어</option>
+                    <option>영어</option>
+                    <option>수학</option>
+                    <option>사회</option>
+                    <option>과학</option>
+                    <option>기타</option>
+                </select>
+                <input id="qaTitle" type="text" placeholder="제목을 입력해 주세요">
+                <textarea id="qaContent" rows="6" placeholder="질문 내용을 입력해 주세요"></textarea>
+                <div class="qa-modal-actions">
+                    <button id="qaSubmitBtn" class="qa-btn primary">등록</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="qaDetailModal" class="qa-modal" aria-hidden="true">
+            <div class="qa-modal-inner" role="dialog" aria-modal="true" aria-labelledby="qaDetailTitle">
+                <button class="qa-close" data-target="detail" aria-label="닫기">✕</button>
+                <h3 id="qaDetailTitle"></h3>
+                <p id="qaDetailContent" class="qa-detail-content"></p>
+
+                <div class="qa-replies-wrap">
+                    <h4>답글</h4>
+                    <ul id="qaReplyList" class="qa-reply-list"></ul>
+                    <div class="qa-reply-form">
+                        <input id="qaReplyInput" type="text" placeholder="답글을 입력하세요">
+                        <button id="qaReplyBtn" class="qa-btn small">등록</button>
+                        <div id="qaDetailActions" style="text-align: right; margin-bottom: 10px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="recordSection" class="app-section" style="display:none;">
+        <h2 class="section-title">📅 기록장</h2>
+        
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button id="prevMonthBtn">◀</button>
+                <h3 id="calendarTitle">2025년 12월</h3>
+                <button id="nextMonthBtn">▶</button>
+            </div>
+            <table class="calendar">
+                <thead>
+                    <tr>
+                        <th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th>
+                    </tr>
+                </thead>
+                <tbody id="calendarBody">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="note-record-area">
+            <div id="noteTabs" class="note-tabs"></div>
+
+            <div id="noteList" class="note-list">
+                <p class="text-center text-gray">날짜를 선택해 기록을 확인하세요.</p>
+            </div>
+            
+            <button id="noteFab" class="fab">+</button>
+        </div>
+    </section>
+    
+    <div id="noteModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>새 기록 등록</h3>
+                <button class="close-btn" id="closeNoteModal">×</button>
+            </div>
+            <div class="modal-body">
+                <label for="noteTypeSelect">분야 선택</label>
+                <select id="noteTypeSelect"></select>
+
+                <label for="noteTitle">제목</label>
+                <input type="text" id="noteTitle" placeholder="기록 제목을 입력하세요">
+
+                <label for="noteContent">내용</label>
+                <textarea id="noteContent" placeholder="자세한 내용을 기록하세요."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button id="saveNoteBtn" class="primary-btn">저장</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
